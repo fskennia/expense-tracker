@@ -1,0 +1,36 @@
+# Environment variables
+backend/.env
+frontend/.env.local
+
+# Dependencies
+node_modules/
+*/node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Vite
+.env.local
+.env.*.local
+
+# Misc
+.cache/
+*.pem
