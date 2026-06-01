@@ -64,28 +64,29 @@ app.post('/api/analyze-invoice', upload.single('invoice'), async (req, res) => {
           },
           {
             type: 'text',
-            text: `Analise esta fatura/extrato e extraia todos os itens de despesa. Para cada item, forneça: descrição, valor (número), categoria (ex: Alimentação, Transporte, Lazer, Saúde, Moradia, Educação, Assinaturas, Outros), e se é necessário (boolean). Retorne SOMENTE um JSON válido com o seguinte formato:
-{
-  "total": número,
-  "currency": "BRL",
-  "items": [
-    { "description": "string", "amount": número, "category": "string", "necessary": boolean }
-  ],
-  "summary": {
-    "by_category": { "categoria": valor_total },
-    "necessary_total": número,
-    "unnecessary_total": número
-  }
-}`
+            text: `Analise esta fatura/extrato e extraia todos os itens de despesa. Retorne SOMENTE um objeto JSON válido, sem texto adicional, sem markdown, sem comentários. Formato exato:
+{"total":0.00,"currency":"BRL","items":[{"description":"nome do item","amount":0.00,"category":"Alimentação","necessary":true}],"summary":{"by_category":{"Alimentação":0.00},"necessary_total":0.00,"unnecessary_total":0.00}}
+
+Categorias permitidas: Alimentação, Transporte, Lazer, Saúde, Moradia, Educação, Assinaturas, Outros.
+IMPORTANTE: Retorne apenas o JSON, nada mais.`
           }
         ]
       }]
     });
 
     const text = message.content[0].type === 'text' ? message.content[0].text : '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Extract JSON block
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*\})/);
     if (!jsonMatch) throw new Error('Resposta inválida da IA');
-    const result = JSON.parse(jsonMatch[0]);
+    const jsonStr = jsonMatch[1] || jsonMatch[0];
+    let result;
+    try {
+      result = JSON.parse(jsonStr);
+    } catch {
+      // Try to fix common issues: trailing commas, unquoted values
+      const fixed = jsonStr.replace(/,\s*([}\]])/g, '$1');
+      result = JSON.parse(fixed);
+    }
 
     res.json(result);
   } catch (error) {
