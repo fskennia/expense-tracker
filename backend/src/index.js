@@ -29,7 +29,7 @@ app.post('/api/analyze', async (req, res) => {
     const { description, amount } = req.body;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       messages: [{
         role: 'user',
@@ -53,7 +53,7 @@ app.post('/api/analyze-invoice', upload.single('invoice'), async (req, res) => {
     const base64 = req.file.buffer.toString('base64');
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       messages: [{
         role: 'user',
