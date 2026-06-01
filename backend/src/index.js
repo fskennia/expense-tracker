@@ -75,17 +75,19 @@ IMPORTANTE: Retorne apenas o JSON, nada mais.`
     });
 
     const text = message.content[0].type === 'text' ? message.content[0].text : '';
-    // Extract JSON block
     const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*\})/);
     if (!jsonMatch) throw new Error('Resposta inválida da IA');
-    const jsonStr = jsonMatch[1] || jsonMatch[0];
+    let jsonStr = jsonMatch[1] || jsonMatch[0];
+    // Sanitize: remove control chars, fix trailing commas
+    jsonStr = jsonStr
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .replace(/,\s*([}\]])/g, '$1');
     let result;
     try {
       result = JSON.parse(jsonStr);
-    } catch {
-      // Try to fix common issues: trailing commas, unquoted values
-      const fixed = jsonStr.replace(/,\s*([}\]])/g, '$1');
-      result = JSON.parse(fixed);
+    } catch(e) {
+      // Last resort: return raw text as error detail
+      throw new Error('JSON inválido: ' + e.message);
     }
 
     res.json(result);
